@@ -73,6 +73,10 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
   scrollXRef.current = scrollX;
   const rowRef = useRef<View>(null);
   const rowLeftRef = useRef(0);
+  // The tabs row is inset by barPadding; the pill's left:0 is the content origin,
+  // so finger math must skip the padding to stay centered under the touch.
+  const padRef = useRef(config.barPadding);
+  padRef.current = config.barPadding;
 
   const measureRow = () =>
     rowRef.current?.measureInWindow((x) => {
@@ -82,7 +86,7 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
   // Pill-left for a finger at absolute screen x (centered under the finger, clamped to the bar).
   const pillLeftForX = (absX: number) => {
     const tw = tabWidthRef.current;
-    const raw = absX - rowLeftRef.current - tw / 2;
+    const raw = absX - rowLeftRef.current - padRef.current - tw / 2;
     return Math.max(0, Math.min(tw * (countRef.current - 1), raw));
   };
 
@@ -140,23 +144,26 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
         }}
         pointerEvents="box-none"
       >
-        <Animated.View style={{ transform: [{ scale: barScale }] }}>
-        <GlassSurface
-          radius={config.barRadius}
-          tintColor={config.barTintColor}
-          borderColor={config.barBorderColor}
-          borderWidth={config.barBorderWidth}
-          blurIntensity={config.blurIntensity}
-          blurTint={config.blurTint}
-          glassStyle={config.glassStyle}
-          glassInteractive={config.glassInteractive}
-          style={{ padding: config.barPadding }}
-        >
+        <Animated.View style={[styles.barWrap, { transform: [{ scale: barScale }] }]}>
+          {/* Glass is a background layer, NOT a parent of the pill — so the pill
+              can swell past the bar edge on press without being clipped by the
+              surface's rounded overflow. */}
+          <GlassSurface
+            radius={config.barRadius}
+            tintColor={config.barTintColor}
+            borderColor={config.barBorderColor}
+            borderWidth={config.barBorderWidth}
+            blurIntensity={config.blurIntensity}
+            blurTint={config.blurTint}
+            glassStyle={config.glassStyle}
+            glassInteractive={config.glassInteractive}
+            style={StyleSheet.absoluteFill}
+          />
           <View
             ref={rowRef}
-            style={styles.inner}
+            style={[styles.inner, { padding: config.barPadding }]}
             onLayout={(e) => {
-              setInnerWidth(e.nativeEvent.layout.width);
+              setInnerWidth(e.nativeEvent.layout.width - config.barPadding * 2);
               measureRow();
             }}
             {...panResponder.panHandlers}
@@ -243,7 +250,6 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
               })}
             </View>
           </View>
-        </GlassSurface>
         </Animated.View>
       </View>
     </View>
@@ -262,6 +268,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  barWrap: {
+    position: 'relative',
   },
   inner: {
     position: 'relative',

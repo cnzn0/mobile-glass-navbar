@@ -57,14 +57,50 @@ export function ControlsPanel({ config, onChange, theme, onThemeChange }: Props)
                 onValueChange={(v) => set('blurIntensity', Math.round(v))} {...sliderColors} />
             </Row>
 
+            <Row label={`Glass style`}>
+              <View style={styles.chips}>
+                {(['regular', 'clear'] as const).map((g) => (
+                  <Pressable key={g} onPress={() => set('glassStyle', g)}
+                    style={[styles.chip, config.glassStyle === g && styles.chipActive]}>
+                    <Text style={[styles.chipText, config.glassStyle === g && styles.chipTextActive]}>{g}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </Row>
+
+            <View style={styles.toggleRow}>
+              <Text style={styles.label}>Glass interactive (lensing)</Text>
+              <Switch value={config.glassInteractive} onValueChange={(v) => set('glassInteractive', v)} />
+            </View>
+
             <Row label={`Tint opacity · ${tintOpacity(config.barTintColor).toFixed(2)}`}>
               <Slider minimumValue={0} maximumValue={0.4} step={0.01} value={tintOpacity(config.barTintColor)}
-                onValueChange={(v) => set('barTintColor', `rgba(243,243,243,${v.toFixed(2)})`)} {...sliderColors} />
+                onValueChange={(v) => set('barTintColor', setAlpha(config.barTintColor, v))} {...sliderColors} />
             </Row>
 
             <Row label={`Pill opacity · ${tintOpacity(config.pillColor).toFixed(2)}`}>
               <Slider minimumValue={0} maximumValue={0.4} step={0.01} value={tintOpacity(config.pillColor)}
-                onValueChange={(v) => set('pillColor', `rgba(243,243,243,${v.toFixed(2)})`)} {...sliderColors} />
+                onValueChange={(v) => set('pillColor', setAlpha(config.pillColor, v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Bar border opacity · ${tintOpacity(config.barBorderColor).toFixed(2)}`}>
+              <Slider minimumValue={0} maximumValue={0.4} step={0.01} value={tintOpacity(config.barBorderColor)}
+                onValueChange={(v) => set('barBorderColor', setAlpha(config.barBorderColor, v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Bar border width · ${config.barBorderWidth.toFixed(1)}`}>
+              <Slider minimumValue={0} maximumValue={3} step={0.5} value={config.barBorderWidth}
+                onValueChange={(v) => set('barBorderWidth', Number(v.toFixed(1)))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Pill border opacity · ${tintOpacity(config.pillBorderColor).toFixed(2)}`}>
+              <Slider minimumValue={0} maximumValue={0.4} step={0.01} value={tintOpacity(config.pillBorderColor)}
+                onValueChange={(v) => set('pillBorderColor', setAlpha(config.pillBorderColor, v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Pill border width · ${config.pillBorderWidth.toFixed(1)}`}>
+              <Slider minimumValue={0} maximumValue={3} step={0.5} value={config.pillBorderWidth}
+                onValueChange={(v) => set('pillBorderWidth', Number(v.toFixed(1)))} {...sliderColors} />
             </Row>
 
             <Row label={`Bar radius · ${config.barRadius}`}>
@@ -92,6 +128,31 @@ export function ControlsPanel({ config, onChange, theme, onThemeChange }: Props)
                 onValueChange={(v) => set('bottomInset', Math.round(v))} {...sliderColors} />
             </Row>
 
+            <Row label={`Horizontal margin · ${config.horizontalMargin}`}>
+              <Slider minimumValue={0} maximumValue={60} step={1} value={config.horizontalMargin}
+                onValueChange={(v) => set('horizontalMargin', Math.round(v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Icon size · ${config.iconSize}`}>
+              <Slider minimumValue={16} maximumValue={36} step={1} value={config.iconSize}
+                onValueChange={(v) => set('iconSize', Math.round(v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Scrim height · ${config.scrimHeight}`}>
+              <Slider minimumValue={0} maximumValue={260} step={5} value={config.scrimHeight}
+                onValueChange={(v) => set('scrimHeight', Math.round(v))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Bar swell · ${config.barSwell.toFixed(2)}`}>
+              <Slider minimumValue={1} maximumValue={1.15} step={0.01} value={config.barSwell}
+                onValueChange={(v) => set('barSwell', Number(v.toFixed(2)))} {...sliderColors} />
+            </Row>
+
+            <Row label={`Pill swell · ${config.pillSwell.toFixed(2)}`}>
+              <Slider minimumValue={1} maximumValue={1.25} step={0.01} value={config.pillSwell}
+                onValueChange={(v) => set('pillSwell', Number(v.toFixed(2)))} {...sliderColors} />
+            </Row>
+
             <View style={styles.toggleRow}>
               <Text style={styles.label}>Show labels</Text>
               <Switch value={config.showLabels} onValueChange={(v) => set('showLabels', v)} />
@@ -113,16 +174,26 @@ export function ControlsPanel({ config, onChange, theme, onThemeChange }: Props)
             <Text style={styles.code} selectable>
               {`blurIntensity: ${config.blurIntensity}
 blurTint: '${config.blurTint}'
+glassStyle: '${config.glassStyle}'
+glassInteractive: ${config.glassInteractive}
 barTintColor: '${config.barTintColor}'
 barBorderColor: '${config.barBorderColor}'
+barBorderWidth: ${config.barBorderWidth}
 barRadius: ${config.barRadius}
 barPadding: ${config.barPadding}
 pillColor: '${config.pillColor}'
+pillBorderColor: '${config.pillBorderColor}'
+pillBorderWidth: ${config.pillBorderWidth}
 pillRadius: ${config.pillRadius}
+iconSize: ${config.iconSize}
 labelColor: '${config.labelColor}'
 idleOpacity: ${config.idleOpacity}
 pressScale: ${config.pressScale}
+barSwell: ${config.barSwell}
+pillSwell: ${config.pillSwell}
+horizontalMargin: ${config.horizontalMargin}
 bottomInset: ${config.bottomInset}
+scrimHeight: ${config.scrimHeight}
 showLabels: ${config.showLabels}`}
             </Text>
           </ScrollView>
@@ -144,6 +215,15 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 function tintOpacity(rgba: string): number {
   const m = rgba.match(/rgba?\([^)]*,\s*([\d.]+)\s*\)/);
   return m ? parseFloat(m[1]) : 0;
+}
+
+// Change only the alpha of an rgba() string, preserving its r,g,b so the slider
+// stays theme-correct (white-ish in dark, near-black in light).
+function setAlpha(rgba: string, a: number): string {
+  const m = rgba.match(/rgba?\(([^)]+)\)/);
+  if (!m) return rgba;
+  const [r, g, b] = m[1].split(',').map((s) => s.trim());
+  return `rgba(${r},${g},${b},${a.toFixed(2)})`;
 }
 
 const sliderColors = {

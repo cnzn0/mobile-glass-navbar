@@ -37,6 +37,8 @@ type GlassSurfaceProps = {
   borderWidth: number;
   blurIntensity: number;
   blurTint: 'dark' | 'light' | 'default';
+  glassStyle?: 'regular' | 'clear';
+  glassInteractive?: boolean;
   children?: React.ReactNode;
   onLayout?: (e: any) => void;
 };
@@ -49,6 +51,8 @@ export function GlassSurface({
   borderWidth,
   blurIntensity,
   blurTint,
+  glassStyle = 'regular',
+  glassInteractive = false,
   children,
   onLayout,
 }: GlassSurfaceProps) {
@@ -64,7 +68,8 @@ export function GlassSurface({
   if (useLiquid) {
     return (
       <GlassView
-        glassEffectStyle="regular"
+        glassEffectStyle={glassStyle}
+        isInteractive={glassInteractive}
         style={[styles.fill, frame, style]}
         onLayout={onLayout}
       >

@@ -60,8 +60,8 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
   const [dragging, setDragging] = useState(false);
   const dragX = useRef(new Animated.Value(0)).current;
   const swell = useRef(new Animated.Value(0)).current;
-  const barScale = swell.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] });
-  const pillScale = swell.interpolate({ inputRange: [0, 1], outputRange: [1, 1.09] });
+  const barScale = swell.interpolate({ inputRange: [0, 1], outputRange: [1, config.barSwell] });
+  const pillScale = swell.interpolate({ inputRange: [0, 1], outputRange: [1, config.pillSwell] });
 
   const tabWidthRef = useRef(0);
   tabWidthRef.current = tabWidth;
@@ -148,6 +148,8 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
           borderWidth={config.barBorderWidth}
           blurIntensity={config.blurIntensity}
           blurTint={config.blurTint}
+          glassStyle={config.glassStyle}
+          glassInteractive={config.glassInteractive}
           style={{ padding: config.barPadding }}
         >
           <View

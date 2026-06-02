@@ -26,6 +26,10 @@ export type NavConfig = {
   barRadius: number;
   /** Inner padding between the bar edge and the tabs. Figma uses 4. */
   barPadding: number;
+  /** Liquid-glass style: 'regular' (frostier) or 'clear' (more see-through). iOS 26 only. */
+  glassStyle: 'regular' | 'clear';
+  /** Whether the liquid glass lenses/reacts to touch. iOS 26 only; no-op on the blur fallback. */
+  glassInteractive: boolean;
 
   // ----- The sliding highlight pill behind the active tab -----
   pillColor: string;
@@ -43,6 +47,10 @@ export type NavConfig = {
   idleOpacity: number;
   /** Scale the tab content shrinks to while pressed. */
   pressScale: number;
+  /** How much the whole bar swells up while dragging (1 = no swell). */
+  barSwell: number;
+  /** How much the pill swells up while dragging (1 = no swell). */
+  pillSwell: number;
   showLabels: boolean;
 
   // ----- Floating placement -----
@@ -63,6 +71,8 @@ export const darkNavConfig: NavConfig = {
   barBorderWidth: 0.5,
   barRadius: 48,
   barPadding: 4,
+  glassStyle: 'regular',
+  glassInteractive: true,
 
   pillColor: 'rgba(243,243,243,0.06)',
   pillBorderColor: 'rgba(243,243,243,0.05)',
@@ -76,6 +86,8 @@ export const darkNavConfig: NavConfig = {
   activeColor: '#F3F3F3',
   idleOpacity: 0.5,
   pressScale: 0.86,
+  barSwell: 1.03,
+  pillSwell: 1.09,
   showLabels: true,
 
   horizontalMargin: 20,
@@ -92,6 +104,8 @@ export const lightNavConfig: NavConfig = {
   barBorderWidth: 0.5,
   barRadius: 48,
   barPadding: 4,
+  glassStyle: 'regular',
+  glassInteractive: true,
 
   pillColor: 'rgba(6,6,12,0.05)',
   pillBorderColor: 'rgba(6,6,12,0.05)',
@@ -105,6 +119,8 @@ export const lightNavConfig: NavConfig = {
   activeColor: '#06060c',
   idleOpacity: 0.5,
   pressScale: 0.86,
+  barSwell: 1.03,
+  pillSwell: 1.09,
   showLabels: true,
 
   horizontalMargin: 20,

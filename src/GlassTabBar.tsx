@@ -73,10 +73,6 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
   scrollXRef.current = scrollX;
   const rowRef = useRef<View>(null);
   const rowLeftRef = useRef(0);
-  // The tabs row is inset by barPadding; the pill's left:0 is the content origin,
-  // so finger math must skip the padding to stay centered under the touch.
-  const padRef = useRef(config.barPadding);
-  padRef.current = config.barPadding;
 
   const measureRow = () =>
     rowRef.current?.measureInWindow((x) => {
@@ -86,7 +82,7 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
   // Pill-left for a finger at absolute screen x (centered under the finger, clamped to the bar).
   const pillLeftForX = (absX: number) => {
     const tw = tabWidthRef.current;
-    const raw = absX - rowLeftRef.current - padRef.current - tw / 2;
+    const raw = absX - rowLeftRef.current - tw / 2;
     return Math.max(0, Math.min(tw * (countRef.current - 1), raw));
   };
 
@@ -159,11 +155,14 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
             glassInteractive={config.glassInteractive}
             style={StyleSheet.absoluteFill}
           />
+          {/* Padding lives on this wrapper so the inner content view keeps a clean
+              zero origin — the pill and tabs then share the same coordinate space. */}
+          <View style={{ padding: config.barPadding }} pointerEvents="box-none">
           <View
             ref={rowRef}
-            style={[styles.inner, { padding: config.barPadding }]}
+            style={styles.inner}
             onLayout={(e) => {
-              setInnerWidth(e.nativeEvent.layout.width - config.barPadding * 2);
+              setInnerWidth(e.nativeEvent.layout.width);
               measureRow();
             }}
             {...panResponder.panHandlers}
@@ -249,6 +248,7 @@ export function GlassTabBar({ tabs, scrollX, onPressTab, config, theme }: Props)
                 );
               })}
             </View>
+          </View>
           </View>
         </Animated.View>
       </View>

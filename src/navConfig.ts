@@ -64,19 +64,19 @@ export type NavConfig = {
 };
 
 export const darkNavConfig: NavConfig = {
-  blurIntensity: 24,
+  blurIntensity: 23,
   blurTint: 'dark',
   barTintColor: 'rgba(243,243,243,0.05)',
-  barBorderColor: 'rgba(243,243,243,0.08)',
+  barBorderColor: 'rgba(243,243,243,0.05)',
   barBorderWidth: 0.5,
   barRadius: 48,
   barPadding: 4,
   glassStyle: 'regular',
   glassInteractive: true,
 
-  pillColor: 'rgba(243,243,243,0.06)',
+  pillColor: 'rgba(243,243,243,0.10)',
   pillBorderColor: 'rgba(243,243,243,0.05)',
-  pillBorderWidth: 0.5,
+  pillBorderWidth: 1,
   pillRadius: 999,
 
   iconSize: 24,
@@ -90,26 +90,26 @@ export const darkNavConfig: NavConfig = {
   pillSwell: 1.09,
   showLabels: true,
 
-  horizontalMargin: 20,
-  bottomInset: 28,
+  horizontalMargin: 36,
+  bottomInset: 36,
   scrimColor: '#06060c',
   scrimHeight: 140,
 };
 
 export const lightNavConfig: NavConfig = {
-  blurIntensity: 12,
+  blurIntensity: 23,
   blurTint: 'light',
-  barTintColor: 'rgba(6,6,12,0.10)',
-  barBorderColor: 'rgba(6,6,12,0.10)',
+  barTintColor: 'rgba(6,6,12,0.05)',
+  barBorderColor: 'rgba(6,6,12,0.05)',
   barBorderWidth: 0.5,
   barRadius: 48,
   barPadding: 4,
   glassStyle: 'regular',
   glassInteractive: true,
 
-  pillColor: 'rgba(6,6,12,0.05)',
+  pillColor: 'rgba(6,6,12,0.10)',
   pillBorderColor: 'rgba(6,6,12,0.05)',
-  pillBorderWidth: 0.5,
+  pillBorderWidth: 1,
   pillRadius: 999,
 
   iconSize: 24,
@@ -123,8 +123,8 @@ export const lightNavConfig: NavConfig = {
   pillSwell: 1.09,
   showLabels: true,
 
-  horizontalMargin: 20,
-  bottomInset: 28,
+  horizontalMargin: 36,
+  bottomInset: 36,
   scrimColor: '#FFFFFF',
   scrimHeight: 140,
 };

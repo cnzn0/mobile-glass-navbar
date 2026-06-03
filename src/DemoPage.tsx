@@ -1,20 +1,29 @@
 /**
- * DemoPage.tsx — throwaway page content. Its only job is to put colorful,
- * scrollable texture *behind* the glass bar so the frosted blur is visible,
- * in both dark and light themes.
+ * DemoPage.tsx — throwaway screen content. Two jobs:
+ *   1. Put colorful, scrollable texture behind the native tab bar so the Liquid
+ *      Glass material is visible (and so minimize-on-scroll has something to do).
+ *   2. Showcase expo-glass-effect directly (the OTHER doc): a floating glass
+ *      "balance" card built from GlassContainer + GlassView — no custom blur.
+ *
+ * Theme follows the OS appearance via useColorScheme(); the native tab bar does
+ * the same, so the whole screen stays in sync with the system light/dark toggle.
  */
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ThemeName } from './navConfig';
+import { GlassContainer, GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 
-type Props = { title: string; accent: string; theme: ThemeName };
+type Props = { title: string; accent: string };
 
-export function DemoPage({ title, accent, theme }: Props) {
-  const dark = theme === 'dark';
+export function DemoPage({ title, accent }: Props) {
+  const dark = useColorScheme() !== 'light';
   const base = dark ? '#06060c' : '#FFFFFF';
   const ink = dark ? '243,243,243' : '6,6,12';
   const text = dark ? '#F3F3F3' : '#06060c';
+  // GlassView renders a plain (transparent) View on < iOS 26, so give the card a
+  // translucent fallback fill there; on iOS 26 the real glass shows through.
+  const glass = isLiquidGlassAvailable();
+  const cardFallback = glass ? 'transparent' : `rgba(${ink},0.06)`;
 
   return (
     <View style={[styles.root, { backgroundColor: base }]}>
@@ -22,7 +31,30 @@ export function DemoPage({ title, accent, theme }: Props) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[styles.kicker, { color: `rgba(${ink},0.5)` }]}>SOURCE OF TRUTH · MOBILE</Text>
         <Text style={[styles.title, { color: text }]}>{title}</Text>
-        {Array.from({ length: 10 }).map((_, i) => (
+
+        {/* expo-glass-effect showcase: a glass balance card. */}
+        <GlassContainer spacing={20} style={styles.glassRow}>
+          <GlassView
+            glassEffectStyle="regular"
+            colorScheme={dark ? 'dark' : 'light'}
+            tintColor={cardFallback}
+            style={[styles.glassCard, { borderColor: `rgba(${ink},0.08)` }]}
+          >
+            <Text style={[styles.balanceLabel, { color: `rgba(${ink},0.5)` }]}>Total balance</Text>
+            <Text style={[styles.balanceValue, { color: text }]}>$48,210.66</Text>
+          </GlassView>
+          <GlassView
+            glassEffectStyle="clear"
+            isInteractive
+            colorScheme={dark ? 'dark' : 'light'}
+            tintColor={cardFallback}
+            style={[styles.glassChip, { borderColor: `rgba(${ink},0.08)` }]}
+          >
+            <Text style={[styles.chipText, { color: text }]}>+2.4%</Text>
+          </GlassView>
+        </GlassContainer>
+
+        {Array.from({ length: 12 }).map((_, i) => (
           <View key={i} style={[styles.card, { backgroundColor: `rgba(${ink},${0.06 + (i % 3) * 0.03})` }]}>
             <View style={[styles.dot, { backgroundColor: accent }]} />
             <View style={{ flex: 1 }}>
@@ -39,9 +71,28 @@ export function DemoPage({ title, accent, theme }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { paddingTop: 80, paddingHorizontal: 20, paddingBottom: 180 },
+  content: { paddingTop: 80, paddingHorizontal: 20, paddingBottom: 40 },
   kicker: { fontSize: 11, letterSpacing: 1.5, fontWeight: '600' },
-  title: { fontSize: 34, fontWeight: '700', marginTop: 6, marginBottom: 24 },
+  title: { fontSize: 34, fontWeight: '700', marginTop: 6, marginBottom: 20 },
+  glassRow: { flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 24 },
+  glassCard: {
+    flex: 1,
+    borderRadius: 24,
+    borderWidth: 1,
+    overflow: 'hidden',
+    padding: 18,
+    justifyContent: 'center',
+  },
+  balanceLabel: { fontSize: 12, fontWeight: '600' },
+  balanceValue: { fontSize: 26, fontWeight: '700', marginTop: 4, fontVariant: ['tabular-nums'] },
+  glassChip: {
+    borderRadius: 24,
+    borderWidth: 1,
+    overflow: 'hidden',
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+  },
+  chipText: { fontSize: 16, fontWeight: '700' },
   card: {
     flexDirection: 'row',
     alignItems: 'center',

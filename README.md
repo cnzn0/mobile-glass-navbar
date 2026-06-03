@@ -1,45 +1,63 @@
 # mobile-glass-navbar
 
-A floating frosted-glass bottom tab bar for the lighter.xyz mobile app. Renders
-real iOS 26 **liquid glass** (`expo-glass-effect`) on a supported device and
-falls back to a frosted `expo-blur` BlurView elsewhere (simulator, older iOS).
+A **fully native** iOS bottom tab bar for the lighter.xyz mobile app, built with
+zero custom navigation code. The bar is Apple's real `UITabBar`, driven by
+expo-router's [`NativeTabs`](https://docs.expo.dev/router/advanced/native-tabs/),
+so on iOS 26 it renders Apple **Liquid Glass** automatically and gets the native
+behaviors for free (minimize-on-scroll, scroll-to-top, haptics, accessibility).
 
-Built on Expo SDK 56 / React Native 0.85. The whole look is data-driven from one
-file so it's easy to hand off and tune.
+Screen content separately showcases
+[`expo-glass-effect`](https://docs.expo.dev/versions/v55.0.0/sdk/glass-effect/)
+via a `GlassContainer` + `GlassView` balance card.
+
+> **No custom implementation.** There is no PanResponder, no Animated pill, no
+> blur-fallback wrapper. That was deliberate: the old hand-rolled bar leaked
+> memory, and the native tab bar doesn't.
+
+Built on **Expo SDK 55** / React Native 0.83.
 
 ## What's where
 
 | File | Purpose |
 | --- | --- |
-| [`src/navConfig.ts`](src/navConfig.ts) | **Single source of truth** for styling. `dark` + `light` presets — every tweakable value lives here. |
-| [`src/GlassTabBar.tsx`](src/GlassTabBar.tsx) | The bar itself: sliding pill, drag-to-pick gesture, glass swell, crossfading icons. |
-| [`src/GlassSurface.tsx`](src/GlassSurface.tsx) | Liquid-glass vs blur-fallback wrapper. |
-| [`src/ControlsPanel.tsx`](src/ControlsPanel.tsx) | On-device tuning UI (gear button, top-right). Dial in values, copy them back into `navConfig.ts`. |
-| `App.tsx` | Test bed: a `PagerView` with 5 pages driving the bar. |
+| [`app/_layout.tsx`](app/_layout.tsx) | The entire navbar — `NativeTabs` with five tabs using the custom lighter.xyz icon set. Tint + labels + icons. |
+| [`app/index.tsx`](app/index.tsx), `markets.tsx`, `trade.tsx`, `pools.tsx`, `portfolio.tsx` | The five tab screens (each just renders `DemoPage`). |
+| [`src/DemoPage.tsx`](src/DemoPage.tsx) | Throwaway screen content + the `expo-glass-effect` glass card showcase. |
+| [`assets/tabs/`](assets/tabs) | Custom tab icons (`<tab>-idle` / `<tab>-selected`, `@1x/@2x/@3x`), rendered as tinted templates. |
 
-## Run it (normal dev workflow)
+Routing is file-based (expo-router): each file in `app/` is a route; the tab
+named `index` is Home. To rename/reorder tabs, edit the `<NativeTabs.Trigger>`
+list in `app/_layout.tsx` and match the route filenames.
+
+## Run it
 
 ```bash
-npm install
-npx expo run:ios      # builds the native app and launches on simulator or a connected device
+npm install --legacy-peer-deps
+npx expo run:ios      # builds the dev client + launches on simulator or device
 ```
 
+> `--legacy-peer-deps` is needed because expo-router lists `react-native-reanimated`
+> as an optional peer that conflicts with the strict npm resolver. NativeTabs
+> doesn't use reanimated.
+
 > The `ios/` and `android/` folders are **not** committed (`.gitignore`). Expo
-> regenerates them from `app.json` on first run — that's expected. You don't need
-> anyone else's Xcode setup.
+> regenerates them from `app.json` via prebuild — that's expected.
 
-**SDK 56 note:** the App Store Expo Go app can't run this — use `expo run:ios`
-(a dev build) or the iOS simulator, which auto-installs the matching runtime.
+If you change `app.json` (plugins/scheme) or native deps, regenerate native:
 
-### Liquid glass only shows on a real device
+```bash
+LANG=en_US.UTF-8 npx expo prebuild --clean -p ios   # LANG avoids a CocoaPods UTF-8 crash
+```
 
-The simulator and Expo Go can't render `expo-glass-effect`, so there you'll see
-the blur fallback. To see true liquid glass, run on a physical iOS 26 device.
+### Liquid glass only shows on a real iOS 26 device
+
+The simulator can't render Liquid Glass, so `NativeTabs` shows a standard
+translucent tab bar there and the `GlassView` card falls back to a plain view.
+To see true Liquid Glass, run on a physical iOS 26 device.
 
 ## Standalone build (no Metro / no WiFi)
 
-Useful for demoing on a phone that isn't on the same network as the dev machine.
-This bakes the JS bundle into the app so it runs on its own:
+Bakes the JS bundle into the app so it runs without a Metro connection:
 
 ```bash
 xcodebuild -workspace ios/mobileglassnavbar.xcworkspace \
@@ -59,10 +77,46 @@ Developer Mode on (Settings → Privacy & Security → Developer Mode) and the
 developer profile trusted on first launch (Settings → General → VPN & Device
 Management).
 
-## Tuning the look
+## Customizing the tab bar
 
-Open the app, tap the **gear** (top-right), and adjust the sliders/toggles —
-glass style (regular/clear), interactive lensing, blur, tint, borders, radii,
-swell, margins, icon size, and more. The panel shows the live values at the
-bottom; paste them into the matching preset in
-[`src/navConfig.ts`](src/navConfig.ts).
+Everything lives in [`app/_layout.tsx`](app/_layout.tsx):
+
+- **Icons** — `<NativeTabs.Trigger.Icon src={{ default, selected }} renderingMode="template" />`
+  points at the PNGs in `assets/tabs/` (idle = outline, selected = filled).
+  `template` mode means the bar tints them, so one monochrome asset set covers
+  light **and** dark — no separate art per theme. (You can still use `sf=` for
+  SF Symbols or `xcasset=` for asset-catalog art.)
+- **Icon size** — there is **no `size` prop**. A native `UITabBarItem` renders
+  the image at its intrinsic point size (px ÷ scale), so size is set by the
+  asset dimensions. The set ships at **24pt** (24 / 48 / 72 px for @1x/@2x/@3x);
+  re-export the PNGs to resize.
+- **Selected color** — `tintColor` (a `DynamicColorIOS` so it tracks light/dark).
+- **Minimize on scroll** — `minimizeBehavior="onScrollDown"` (iOS 26).
+
+### What the iOS 26 Liquid Glass bar actually honours
+
+The glass material renders itself, so several appearance props you'd expect to
+work are **silently ignored** by the system. Tested on-device by forcing extreme
+values (not guessed):
+
+| Prop | Effect under Liquid Glass |
+| --- | --- |
+| `tintColor` | ✅ selected-item accent |
+| `iconColor.selected` | ✅ selected icon colour |
+| `labelStyle.selected.color` | ✅ selected label colour |
+| `labelStyle.*` `fontSize` / `fontWeight` | ✅ typography, both states |
+| icon images / label text / `minimizeBehavior` | ✅ |
+| `iconColor.default` (idle) | ❌ forced to system tint |
+| `labelStyle.default.color` (idle) | ❌ forced to system tint |
+| `blurEffect` | ❌ bar never flattens |
+| `backgroundColor` | ❌ glass can't be back-filled |
+| `shadowColor` | ❌ no hairline under glass |
+
+**Rule of thumb:** you own the *selected* accent and *all typography*; the
+system owns the bar material and the *unselected* item colour. The only way to
+flatten the bar / colour idle items is to opt the whole app out of the iOS 26
+redesign with `ios.infoPlist.UIDesignRequiresCompatibility: true` in `app.json`
+— which also strips Liquid Glass from `expo-glass-effect`, so it's all-or-nothing.
+
+See the [NativeTabs docs](https://docs.expo.dev/router/advanced/native-tabs/)
+for the full prop list (badges, search role, bottom accessory, etc.).

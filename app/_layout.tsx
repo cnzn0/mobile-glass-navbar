@@ -47,27 +47,25 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { DynamicColorIOS } from 'react-native';
 
-// lighter.xyz ink, per appearance. Off White/100 (#f3f3f3) selected,
-// the same ink at 50% for idle — matching the Figma tokens (idle = opacity 0.5).
+// lighter.xyz ink, per appearance. Off White/100 (#f3f3f3) on dark, near-black
+// on light — the SELECTED accent. The idle colour is the system's under glass
+// (see header), so there's no idle-tint constant: it would be a no-op.
 const tint = DynamicColorIOS({ light: '#06060c', dark: '#f3f3f3' });
-const tintIdle = DynamicColorIOS({
-  light: 'rgba(6,6,12,0.5)',
-  dark: 'rgba(243,243,243,0.5)',
-});
 
 // SF Pro Text Medium 10 / lineHeight 12 (the `pro/xxs/medium` Figma style).
+// fontSize/fontWeight are honoured for BOTH states; only the colour differs.
 const labelBase = { fontSize: 10, fontWeight: '500' } as const;
 
 export default function TabLayout() {
   return (
     <NativeTabs
       tintColor={tint}
-      // Selected glyph = full ink; idle glyph colour is set by the system under
-      // Liquid Glass (the `default` here only takes effect if glass is disabled).
-      iconColor={{ default: tintIdle, selected: tint }}
-      // Sizes/weights apply to both states; only the SELECTED colour lands.
+      // Selected glyph = full ink. Idle glyph colour is the system's under glass,
+      // so we only set `selected` — `default` would be ignored.
+      iconColor={{ selected: tint }}
+      // Typography lands for both states; only the SELECTED colour is honoured.
       labelStyle={{
-        default: { ...labelBase, color: tintIdle },
+        default: labelBase,
         selected: { ...labelBase, color: tint },
       }}
       minimizeBehavior="onScrollDown"
